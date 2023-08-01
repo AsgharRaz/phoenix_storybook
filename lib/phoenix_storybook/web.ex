@@ -2,7 +2,7 @@ defmodule PhoenixStorybook.Web do
   @moduledoc false
 
   @doc false
-  def controller do
+  def controller(_opts) do
     quote do
       @moduledoc false
 
@@ -13,13 +13,12 @@ defmodule PhoenixStorybook.Web do
   end
 
   @doc false
-  def view do
+  def view(opts) do
     quote do
       @moduledoc false
-
       use Phoenix.View,
         namespace: PhoenixStorybook,
-        root: "lib/phoenix_storybook/templates"
+        root: Keyword.get(unquote(opts), :root, "lib/phoenix_storybook/templates") 
 
       import PhoenixStorybook.Components.Icon
 
@@ -28,11 +27,11 @@ defmodule PhoenixStorybook.Web do
   end
 
   @doc false
-  def live_view do
+  def live_view(_opts) do
+    layout_view = Application.get_env(:phoenix_storybook, :layout_view)
     quote do
       @moduledoc false
-      use Phoenix.LiveView,
-        layout: {PhoenixStorybook.LayoutView, :live}
+      use Phoenix.LiveView, layout: {unquote(layout_view), :live}
 
       import PhoenixStorybook.Components.Icon
 
@@ -41,7 +40,7 @@ defmodule PhoenixStorybook.Web do
   end
 
   @doc false
-  def component do
+  def component(_opts) do
     quote do
       @moduledoc false
       use Phoenix.Component
@@ -50,7 +49,7 @@ defmodule PhoenixStorybook.Web do
   end
 
   @doc false
-  def live_component do
+  def live_component(_opts) do
     quote do
       @moduledoc false
       use Phoenix.LiveComponent
@@ -74,7 +73,6 @@ defmodule PhoenixStorybook.Web do
   @doc """
   Convenience helper for using the functions above.
   """
-  defmacro __using__(which) when is_atom(which) do
-    apply(__MODULE__, which, [])
-  end
+  defmacro __using__(which) when is_atom(which), do: apply(__MODULE__, which, [[]])
+  defmacro __using__(opts), do: apply(__MODULE__, Keyword.get(opts, :type), [opts])
 end
